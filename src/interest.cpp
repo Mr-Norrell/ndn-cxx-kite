@@ -35,6 +35,8 @@ static_assert(std::is_base_of<tlv::Error, Interest::Error>::value,
 
 Interest::Interest()
   : m_interestLifetime(time::milliseconds::min())
+  , m_tracedFlag(DEFAULT_INTEREST_PIT_TRACED_FLAG)
+  , m_tracingFlag(DEFAULT_INTEREST_PIT_TRACING_FLAG)
   , m_selectedDelegationIndex(INVALID_SELECTED_DELEGATION_INDEX)
 {
 }
@@ -42,6 +44,8 @@ Interest::Interest()
 Interest::Interest(const Name& name)
   : m_name(name)
   , m_interestLifetime(time::milliseconds::min())
+  , m_tracedFlag(DEFAULT_INTEREST_PIT_TRACED_FLAG)
+  , m_tracingFlag(DEFAULT_INTEREST_PIT_TRACING_FLAG)
   , m_selectedDelegationIndex(INVALID_SELECTED_DELEGATION_INDEX)
 {
 }
@@ -49,6 +53,8 @@ Interest::Interest(const Name& name)
 Interest::Interest(const Name& name, const time::milliseconds& interestLifetime)
   : m_name(name)
   , m_interestLifetime(interestLifetime)
+  , m_tracedFlag(DEFAULT_INTEREST_PIT_TRACED_FLAG)
+  , m_tracingFlag(DEFAULT_INTEREST_PIT_TRACING_FLAG)
   , m_selectedDelegationIndex(INVALID_SELECTED_DELEGATION_INDEX)
 {
 }
@@ -225,6 +231,9 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
   //                InterestLifetime?
   //                Link?
   //                SelectedDelegation?
+  //                TracingFlag?
+  //                TracedFlag?
+  //                TracingName?
 
   // (reverse encoding)
 
@@ -261,6 +270,22 @@ Interest::wireEncode(EncodingImpl<TAG>& encoder) const
 
   // Name
   totalLength += getName().wireEncode(encoder);
+
+  // TracingFlag
+  if (m_tracingFlag != DEFAULT_INTEREST_PIT_TRACING_FLAG)
+    {
+      totalLength += encoder.prependByte(m_tracingFlag);
+    }
+
+  // TracedFlag
+  if (m_tracedFlag != DEFAULT_INTEREST_PIT_TRACED_FLAG)
+    {
+      totalLength += encoder.prependByte(m_tracedFlag);
+    }
+
+  // TraceName
+  if (isTracing())
+  totalLength += getTraceName().wireEncode(encoder);
 
   totalLength += encoder.prependVarNumber(totalLength);
   totalLength += encoder.prependVarNumber(tlv::Interest);

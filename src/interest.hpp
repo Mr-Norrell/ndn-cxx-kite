@@ -36,6 +36,8 @@ class Data;
  *  @brief default value for InterestLifetime
  */
 const time::milliseconds DEFAULT_INTEREST_LIFETIME = time::milliseconds(4000);
+const uint8_t DEFAULT_INTEREST_PIT_TRACING_FLAG = 0;
+const uint8_t DEFAULT_INTEREST_PIT_TRACED_FLAG = 0;
 
 /** @brief represents an Interest packet
  */
@@ -380,6 +382,59 @@ public: // Selectors
     return *this;
   }
 
+  Interest&
+  setTracingFlag(uint8_t flag)
+  {
+    m_tracingFlag = flag;
+    m_wire.reset();
+    return *this;
+  }
+
+  Interest&
+  setTracedFlag(uint8_t flag)
+  {
+    m_tracedFlag = flag;
+    m_wire.reset();
+    return *this;
+  }
+
+  bool
+  isTracing() const
+  {
+    return m_traceName.hasWire();
+  }
+
+  bool
+  isTraced() const
+  {
+    if(m_tracedFlag != DEFAULT_INTEREST_PIT_TRACED_FLAG)
+      {
+        return true;
+      }
+    else
+        return false;
+  }
+
+//  const uint8_t&
+//  getPitForwardingFlag() const
+//  {
+//    return m_pitorwardingFlag;
+//  }
+
+  Interest&
+  setTraceName(Name traceName)
+  {
+    m_traceName = traceName;
+    m_wire.reset();
+    return *this;
+  }
+
+  const Name&
+  getTraceName() const
+  {
+    return m_traceName;
+  }
+
 public: // EqualityComparable concept
   bool
   operator==(const Interest& other) const
@@ -403,6 +458,10 @@ private:
   mutable shared_ptr<Link> m_linkCached;
   size_t m_selectedDelegationIndex;
   mutable Block m_wire;
+
+  uint8_t m_tracingFlag;
+  uint8_t m_tracedFlag;
+  Name m_traceName;
 };
 
 std::ostream&
